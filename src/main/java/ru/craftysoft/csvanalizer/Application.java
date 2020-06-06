@@ -26,7 +26,7 @@ public class Application {
 //    }
 
     public static void main(String[] args) {
-        new ProductService().addData();
+        new ProductService().addData("/home/dkononov/git/samples/csv-analizer/src/main/resources");
     }
 
     public static void generate() {

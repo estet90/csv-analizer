@@ -1,13 +1,14 @@
 package ru.craftysoft.csvanalizer;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -22,15 +23,15 @@ public class ProductService {
     });
     private final Map<Integer, TreeMap<Float, Product>> productsByIdGrouping = new HashMap<>();
 
-    void addData() {
-        products.clear();
-        productsByIdGrouping.clear();
+    void addData(String path) {
+        recursiveFileRead(new File(path), this::processFile);
+        writeResult();
+    }
+
+    private void processFile(File file) {
         var start = System.currentTimeMillis();
-        var path = Paths.get("/home/dkononov/git/samples/csv-analizer/src/main/resources/fileName.csv");
-        var i = 0;
-        try (var bufferedReader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+        try (var bufferedReader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
             for (String line; (line = bufferedReader.readLine()) != null; ) {
-//                System.out.println("counter: " + ++i + " size: " + products.size());
                 var fields = line.split(";");
                 var product = new Product(
                         Integer.parseInt(fields[0]),
@@ -165,10 +166,24 @@ public class ProductService {
                 }
             }
             System.out.println(System.currentTimeMillis() - start + " " + products.size());
-//            System.out.println(products);
-//            System.out.println(productsByIdGrouping);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+
+    private void writeResult() {
+
+    }
+
+    private void recursiveFileRead(File file, Consumer<File> processor) {
+        if (file.isDirectory() && file.listFiles() != null) {
+            for (var fileInDirectory : file.listFiles()) {
+                recursiveFileRead(fileInDirectory, processor);
+            }
+        } else {
+            processor.accept(file);
+            System.out.println(file.getName());
         }
     }
 
