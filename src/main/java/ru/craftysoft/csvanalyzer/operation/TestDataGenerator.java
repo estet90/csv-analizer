@@ -17,6 +17,15 @@ public class TestDataGenerator {
         try {
             var lineSeparator = System.lineSeparator();
             for (int i = 1; i < filesCount + 1; i++) {
+                var directory = new File(folder);
+                if (!directory.exists()) {
+                    var created = directory.mkdir();
+                    if (created) {
+                        logger.info("TestDataGenerator.process new directory");
+                    } else {
+                        throw new IllegalArgumentException(String.format("Не удалось создать папку '%s'", folder));
+                    }
+                }
                 var file = new File(folder + "/test" + i + ".csv");
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
                     var current = ThreadLocalRandom.current();
@@ -31,7 +40,7 @@ public class TestDataGenerator {
                     }
                 }
             }
-            logger.info("TestDataGenerator.process.out");
+            logger.info("TestDataGenerator.process.out directory={} filesCount={}", folder, filesCount);
         } catch (Exception e) {
             logger.error("TestDataGenerator.process.thrown", e);
         }

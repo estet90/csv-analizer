@@ -28,8 +28,12 @@ public class Analyzer {
     private static final Logger logger = LogManager.getLogger(ProductService.class);
 
     public void process(String in, String out) {
-        var start = System.currentTimeMillis();
         var point = "FileProcessor.process";
+        if (!new File(in).isDirectory() || !new File(out).isFile()) {
+            logger.error("{}.incorrect Убедитесь, что '{}' - это директория, а '{}' - файл", point, in, out);
+            return;
+        }
+        var start = System.currentTimeMillis();
         logger.info("{}.in", point);
         var threadsCount = Runtime.getRuntime().availableProcessors();
         var executor = Executors.newFixedThreadPool(threadsCount);

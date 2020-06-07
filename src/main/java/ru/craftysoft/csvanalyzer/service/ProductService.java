@@ -24,6 +24,7 @@ public class ProductService {
         return products;
     }
 
+    //возможно этот метод стоит разделить на несколько методов поменьше. но я не хочу иметь много методов, меняющих глобальное состояние.
     public synchronized void processProduct(Product product) {
         if (products.contains(product)) {
             return;

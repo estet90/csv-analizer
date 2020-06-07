@@ -18,8 +18,8 @@ public class Application {
             var helpText = """
                     Возможные ключи запуска
                     --mode - необязательный - режим работы приложения. Возможные значения 'analyze', 'generate'. По умолчанию используется 'analyze'.
-                    --out - обязательный - для режима 'analyze' - директория, в которую записывается результат вычислений .
-                                           для режима 'generate' - директория, в которую записываются сгенерированные файлы.
+                    --outFile - обязательный - для режима 'analyze' - файл, в который записывается результат.
+                    --out - обязательный - для режима 'generate' - директория, в которую записываются сгенерированные файлы.
                     --in - обязательный для 'analyze' - директория, содержащая файлы для анализа.
                     --filesCount - необязательный - только для режима 'generate'. Количество генерируемых файлов. Должен быть целым положительным числом.
                                                     По умолчания 200.
@@ -46,7 +46,8 @@ public class Application {
         var options = new Options();
         options.addOption("mode", "mode", true, "Тип выполняемой операции");
         options.addOption("in", "in", true, "Директория, содержащая файлы для анализа");
-        options.addOption("out", "out", true, "Директория, в которую записывается результат");
+        options.addOption("outFile", "outFile", true, "Файл, в которую записывается результат");
+        options.addOption("out", "out", true, "Директория, в которую записываются сгенерированные файлы");
         options.addOption("filesCount", "filesCount", true, "Количество генерируемых файлов");
         options.addOption("rowsCount", "rowsCount", true, "Количество строк в генерируемом файле");
         return options;
@@ -90,7 +91,7 @@ public class Application {
         if (in == null) {
             errors.add("Не указана директория с файлами для анализа");
         }
-        var out = parsed.getOptionValue("out");
+        var out = parsed.getOptionValue("outFile");
         if (out == null) {
             errors.add("Не указана директория для вывода результата");
         }

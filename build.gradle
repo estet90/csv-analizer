@@ -1,5 +1,6 @@
 plugins {
     id "java"
+    id "application"
 }
 
 group "ru.craftysoft"
@@ -17,8 +18,7 @@ dependencies {
     )
     testCompile(
             "org.junit.jupiter:junit-jupiter:5.6.2",
-            "org.assertj:assertj-core:3.16.1",
-            "org.mockito:mockito-core:3.3.3"
+            "org.assertj:assertj-core:3.16.1"
     )
 }
 
@@ -38,6 +38,18 @@ test {
     testLogging {
         events "passed", "skipped", "failed"
         exceptionFormat "full"
+    }
+}
+
+jar {
+    mainClassName = "ru.craftysoft.csvanalyzer.Application"
+    manifest {
+        attributes("Main-Class": "$mainClassName")
+    }
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
     }
 }
 
