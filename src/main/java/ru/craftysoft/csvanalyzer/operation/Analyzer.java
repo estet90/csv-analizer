@@ -1,39 +1,49 @@
-package ru.craftysoft.csvanalyzer;
+package ru.craftysoft.csvanalyzer.operation;
 
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import ru.craftysoft.csvanalyzer.dto.Product;
+import ru.craftysoft.csvanalyzer.service.ProductService;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-public class Analizer {
+public class Analyzer {
 
     private final ProductService productService = new ProductService();
 
     private static final Logger logger = LogManager.getLogger(ProductService.class);
 
-    void process(String in, String out) {
+    public void process(String in, String out) {
+        var start = System.currentTimeMillis();
         var point = "FileProcessor.process";
         logger.info("{}.in", point);
         var threadsCount = Runtime.getRuntime().availableProcessors();
         var executor = Executors.newFixedThreadPool(threadsCount);
         try {
-            recursiveFileProcess(executor, new File(in), this::processFile);
-            executor.shutdown();
-            while (!executor.isTerminated()) {
-                Thread.sleep(1000);
+            var processors = new ArrayList<Callable<Object>>();
+            recursiveFileProcess(processors, new File(in), this::processFile);
+            var futures = executor.invokeAll(processors);
+            for (var future : futures) {
+                future.get();
             }
+            executor.shutdown();
             writeResult(out);
-            logger.info("{}.out", point);
+            var processTime = System.currentTimeMillis() - start;
+            logger.info("{}.out time={}ms", point, processTime);
         } catch (Exception e) {
             logger.error("{}.thrown", point, e);
         }
@@ -61,21 +71,24 @@ public class Analizer {
                         logger.error("{}.thrown line={}", point, line, e);
                     }
                 }
-                var workTime = System.currentTimeMillis() - start;
-                logger.info("{}.out time={}ms", point, workTime);
+                var processFileTime = System.currentTimeMillis() - start;
+                logger.info("{}.out time={}ms", point, processFileTime);
             } catch (Exception e) {
                 logger.error("{}.thrown", point, e);
             }
         }
     }
 
-    private void recursiveFileProcess(ExecutorService executor, File file, Consumer<File> processor) {
+    private void recursiveFileProcess(List<Callable<Object>> processors, File file, Consumer<File> processor) {
         if (file.isDirectory() && file.listFiles() != null) {
             for (var fileInDirectory : file.listFiles()) { //idea предлагает тут сделать проверку на NULL, но у меня она делается выше
-                recursiveFileProcess(executor, fileInDirectory, processor);
+                recursiveFileProcess(processors, fileInDirectory, processor);
             }
         } else {
-            executor.execute(() -> processor.accept(file));
+            processors.add(() -> {
+                processor.accept(file);
+                return null;
+            });
         }
     }
 
@@ -85,9 +98,10 @@ public class Analizer {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             var products = productService.getProducts();
             for (var product : products) {
+                var price = BigDecimal.valueOf(product.price()).setScale(2, RoundingMode.HALF_DOWN);
                 var line = String.join(
                         ";",
-                        String.valueOf(product.id()), product.name(), product.condition(), product.state(), String.valueOf(product.price())
+                        String.valueOf(product.id()), product.name(), product.condition(), product.state(), price.toString()
                 );
                 line += lineSeparator;
                 writer.write(line);

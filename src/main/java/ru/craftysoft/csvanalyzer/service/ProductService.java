@@ -1,4 +1,6 @@
-package ru.craftysoft.csvanalyzer;
+package ru.craftysoft.csvanalyzer.service;
+
+import ru.craftysoft.csvanalyzer.dto.Product;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,11 +20,11 @@ public class ProductService {
     });
     private final Map<Integer, TreeMap<Float, Product>> productsByIdGrouping = new HashMap<>();
 
-    synchronized TreeSet<Product> getProducts() {
+    public TreeSet<Product> getProducts() {
         return products;
     }
 
-    synchronized void processProduct(Product product) {
+    public synchronized void processProduct(Product product) {
         if (products.contains(product)) {
             return;
         }

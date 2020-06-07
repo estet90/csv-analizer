@@ -3,6 +3,8 @@ package ru.craftysoft.csvanalyzer;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
+import ru.craftysoft.csvanalyzer.operation.Analyzer;
+import ru.craftysoft.csvanalyzer.operation.TestDataGenerator;
 
 import java.util.ArrayList;
 
@@ -12,7 +14,6 @@ public class Application {
     private static final String generateMode = "generate";
 
     public static void main(String[] args) {
-//        var path = "/home/dkononov/work/test-data";
         if (args.length == 0 || "--help".equals(args[0])) {
             var helpText = """
                     Возможные ключи запуска
@@ -21,9 +22,9 @@ public class Application {
                                            для режима 'generate' - директория, в которую записываются сгенерированные файлы.
                     --in - обязательный для 'analyze' - директория, содержащая файлы для анализа.
                     --filesCount - необязательный - только для режима 'generate'. Количество генерируемых файлов. Должен быть целым положительным числом.
-                                                    По умолчания 100.
+                                                    По умолчания 200.
                     --rowsCount - необязательный - только для режима 'generate'. Количество строк в генерируемом файле. Должен быть целым положительным числом.
-                                                   По умолчания 10000.""";
+                                                   По умолчания 50000.""";
             System.out.println(helpText);
             return;
         }
@@ -57,12 +58,12 @@ public class Application {
         if (out == null) {
             errors.add("Не указана директория для генерации файлов");
         }
-        var filesCountArgument = parsed.getOptionValue("filesCount", "100");
+        var filesCountArgument = parsed.getOptionValue("filesCount", "200");
         int filesCount = 0;
         try {
             filesCount = Integer.parseInt(filesCountArgument);
             if (filesCount <= 0) {
-                errors.add("Параметр 'filesCount' не может принимать отрицательное значение");
+                errors.add("Параметр 'filesCount' должен быть положительным");
             }
         } catch (NumberFormatException e) {
             errors.add(e.getMessage());
@@ -72,7 +73,7 @@ public class Application {
         try {
             rowsCount = Integer.parseInt(rowsCountArgument);
             if (rowsCount <= 0) {
-                errors.add("Параметр 'rowsCount' не может принимать отрицательное значение");
+                errors.add("Параметр 'rowsCount' должен быть положительным");
             }
         } catch (NumberFormatException e) {
             errors.add(e.getMessage());
@@ -96,7 +97,7 @@ public class Application {
         if (!errors.isEmpty()) {
             throw new RuntimeException(errors.toString());
         }
-        new Analizer().process(in, out);
+        new Analyzer().process(in, out);
     }
 
 }

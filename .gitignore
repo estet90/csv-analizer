@@ -6,5 +6,4 @@ target
 .gradle
 build
 out
-
-.attach*
+logs
