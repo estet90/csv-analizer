@@ -22,6 +22,10 @@ dependencies {
     )
 }
 
+run() {
+    jvmArgs += ["--enable-preview"]
+}
+
 compileJava() {
     options.compilerArgs += ["--enable-preview"]
 }

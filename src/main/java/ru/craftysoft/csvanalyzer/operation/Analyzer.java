@@ -29,15 +29,11 @@ public class Analyzer {
 
     public void process(String in, String out) {
         var point = "FileProcessor.process";
-        if (!new File(in).isDirectory() || !new File(out).isFile()) {
-            logger.error("{}.incorrect Убедитесь, что '{}' - это директория, а '{}' - файл", point, in, out);
-            return;
-        }
-        var start = System.currentTimeMillis();
-        logger.info("{}.in", point);
-        var threadsCount = Runtime.getRuntime().availableProcessors();
-        var executor = Executors.newFixedThreadPool(threadsCount);
         try {
+            var start = System.currentTimeMillis();
+            logger.info("{}.in", point);
+            var threadsCount = Runtime.getRuntime().availableProcessors();
+            var executor = Executors.newFixedThreadPool(threadsCount);
             var processors = new ArrayList<Callable<Object>>();
             recursiveFileProcess(processors, new File(in), this::processFile);
             var futures = executor.invokeAll(processors);
